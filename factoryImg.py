@@ -1,3 +1,4 @@
+from array import array
 import os
 import cv2
 import pdb
@@ -10,6 +11,7 @@ import puzzle as puzz
 import json
 import hashlib
 import datetime
+import numpy as np
 
 
 class factoryImg():
@@ -47,6 +49,8 @@ class factoryImg():
 
         self.puzz = puzz.puzzle()
 
+        self.DNAs = []
+
 
     def showAllImgs(self):
                 
@@ -54,48 +58,69 @@ class factoryImg():
             layer.show()
 
 
+    def verifyUniqueness(self, dna):
+
+        # Verify that this is the unique image
+        for d in self.DNAs:
+            if np.array_equal(d, dna):
+                print(f"Two DNA are the same: {d}")
+                return False
+        
+        return True
+
+
     def generateRandomImg(self):
 
-        elements = []
-
         # list with all index of layer choosen randomly
-        randDecision = []
+        dna = np.zeros(len(self.layers), dtype=np.int32)
+
+        # list of the imgs choosen
+        elements = []
 
         # list with all information about each layer choosen
         attributes = []
 
-        for i, layer in enumerate(self.layers):
-            # random.randint(0, 10) will return
-            # a random number from [0, 1, 2, 3, 4, 5, 6, 7, 8 ,9, 10]
-            if len(layer.img)-1 == 0:
-                num = 0
+        condition = True
+        while(condition):
+            for i, layer in enumerate(self.layers):
 
+                # random.randint(0, 10) will return
+                # a random number from [0, 1, 2, 3, 4, 5, 6, 7, 8 ,9, 10]
+                if len(layer.img)-1 == 0:
+                    num = 0
+                else:
+                    num = random.randint(0, len(layer.img)-1)
+
+                # save data for the json            
+                dna[i] = num
+                attributes.append({
+                    "trait_type": layer.path,
+                    "value": layer.name[num]
+                })     
+                elements.append(copy.deepcopy(layer.img[num]))
+
+            if self.verifyUniqueness(dna):
+                # add dna into the list, because it's valid
+                self.DNAs.append(dna)
+
+                # exit from while cycle
+                condition = False
             else:
-                num = random.randint(0, len(layer.img)-1)
-                #print(num)
+                # reset everything, because it already exists an image with that dna
+                dna = np.zeros_like(dna)
+                elements = []
+                attributes = []
 
-            # save data for the json            
-            '''
-            # SAVE A
-            randDecision.append({f"{i}": num})
-            attributes.append({
-                "id": i,
-                "layer": layer.path,
-                "name": layer.name[num],
-                "rarity": "rare"
-            })
-            '''
+        img = self.createImg(elements)
 
-            # SAVE B
-            randDecision.append({f"{i}": num})
-            attributes.append({
-                "trait_type": layer.path,
-                "value": layer.name[num]
-            })     
+        data = self.fJson.buildJson(dna, attributes, self.currentImg)
+        self.fJson.createSingleJson(self.imgFolder, self.currentImg)
+
+        return img
 
 
-            elements.append(copy.deepcopy(layer.img[num]))
-
+    def createImg(self, elements):
+        # create the image
         background = elements[-1]
         for element in elements[::-1][1::]:
             foreground = element
@@ -114,10 +139,6 @@ class factoryImg():
 
         # display the image
         #layer.show(background, 0.1)
-
-        data = self.fJson.buildJson(randDecision, attributes, self.currentImg)
-        self.fJson.createSingleJson(self.imgFolder, self.currentImg)
-
 
         return background
 

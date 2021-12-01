@@ -46,21 +46,10 @@ class factoryJson():
                 json.dump(data, file, indent=4)
 
 
-    def buildJson(self, randDecision, attributes, currentImg):
+    def buildJson(self, dna, attributes, currentImg):
 
-        hash = hashlib.md5(json.dumps(randDecision).encode('utf-8')).hexdigest()
-
-        '''
-        # SAVE A
-        # Driver code  
-        data = {
-            "hash": hash,
-            "decodedHash": randDecision,
-            "edition": currentImg,
-            "date": datetime.datetime.now().timestamp(),
-            "attributes": attributes
-        }
-        '''
+        dna = dna.tolist()
+        hash = hashlib.md5(json.dumps(dna).encode('utf-8')).hexdigest()
 
         data = {
             "dna": hash,

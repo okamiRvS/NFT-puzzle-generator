@@ -20,7 +20,7 @@ def main():
                   "body", 
                   "wings", 
                   "background"]
-    numberImgs = 100
+    numberImgs = 20
 
     buildImg = fImg.factoryImg(".\layers", layersName)
     #buildImg.showAllImgs()
