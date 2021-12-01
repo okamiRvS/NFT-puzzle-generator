@@ -15,13 +15,13 @@ import numpy as np
 
 class factoryImg():
 
-    def __init__(self, currentDir, layersName) -> None:
+    def __init__(self, currentDir, layersName, itMustExists, width, height) -> None:
 
         layers = []
 
         root = "layers"
         
-        for dir in layersName:
+        for idx, dir in enumerate(layersName):
             pathDir = os.path.join(root, dir)
             print(pathDir)
 
@@ -35,6 +35,10 @@ class factoryImg():
 
                 layers[-1].addName(file)
                 layers[-1].addImg(pathImg)
+            
+            if not itMustExists[idx]:
+                layers[-1].addName("noObj")
+                layers[-1].addBlanckImg(width, height)
 
         self.layersName = layersName
 
@@ -49,6 +53,10 @@ class factoryImg():
         self.puzz = puzz.puzzle()
 
         self.DNAs = []
+
+        self.width = width
+
+        self.height = height
 
 
     def showAllImgs(self):

@@ -2,6 +2,7 @@ import os
 import cv2
 import pdb
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class layer():
@@ -19,6 +20,13 @@ class layer():
         # The syntax of imread() function contains a second argument whose default value is cv2.IMREAD_COLOR. Any transparency present in the image is not read.
         # To read PNG images with transparency (alpha) channel, use cv2.IMREAD_UNCHANGED as second argument in cv2.imread() function as shown in the following.
         tmp = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+        self.img.append(tmp)
+
+
+    def addBlanckImg(self, width, height):
+        
+        # add blank image
+        tmp = np.zeros([width, height, 4], dtype=np.uint8)
         self.img.append(tmp)
 
 

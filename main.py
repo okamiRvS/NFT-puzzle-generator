@@ -8,21 +8,13 @@ import factoryImg as fImg
 def main():
 
     # order is important
-    layersName = ["baby",
-                  "claws",
-                  "bracelets", 
-                  "eyes", 
-                  "hair", 
-                  "collars", 
-                  "mouth", 
-                  "face", 
-                  "tails", 
-                  "body", 
-                  "wings", 
-                  "background"]
-    numberImgs = 20
+    layersName = ["baby", "claws", "bracelets", "eyes", "hair", "collars", "mouth", "skin", "face", "tails", "body", "wings",  "background"]
+    itMustExists = [False, True, False, True, True, False, True, False, True, False, True, True, True]
+    width = 798
+    height = 860
+    numberImgs = 100
 
-    buildImg = fImg.factoryImg(".\layers", layersName)
+    buildImg = fImg.factoryImg(".\layers", layersName, itMustExists, width, height)
     #buildImg.showAllImgs()
 
     img = buildImg.RandomImgs(numberImgs)
