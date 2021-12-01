@@ -1,7 +1,6 @@
 import os
 import cv2
 import pdb
-from PIL import Image
 import matplotlib.pyplot as plt
 import factoryImg as fImg
 

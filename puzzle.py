@@ -35,7 +35,9 @@ class puzzle():
         plt.pause(time)
         plt.clf()
 
+
 def main():
+    
     tmp = puzzle()
 
     for puz in tmp.puzzleImgs:
