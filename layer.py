@@ -13,6 +13,19 @@ class layer():
         self.img = []
         self.name = []
 
+        self.rarity = []
+        self.normal = 0
+        self.rare = 0
+        self.ultrarare = 0
+
+        self.probNormal = 0.6
+        self.probRare = 0.3
+        self.probUltraRare = 0.1
+
+        self.isComplexLayer = False
+        self.index = -1
+        self.foreground = None
+
 
     def addImg(self, path):
 
@@ -30,10 +43,51 @@ class layer():
         self.img.append(tmp)
 
 
-    def addName(self, name):
+    def addNameAndRarity(self, name):
+
+        x = name.find("_SSS")
+        y = name.find("_SS")
+        if x > 0:
+            self.ultrarare+=1
+            self.rarity.append("ultrarare")
+        elif y > 0:
+            self.rare+=1
+            self.rarity.append("rare")
+        else:
+            self.normal+=1
+            self.rarity.append("normal") # no obj is trated like a normal obj
 
         self.name.append(name)
+    
+
+    def computeWeight(self):
+
+        if self.normal == 0:
+            singleProbNormal = 0
+        else:
+            singleProbNormal = self.probNormal / self.normal
+
+        if self.rare == 0:
+            singleProbRare = 0
+        else:
+            singleProbRare = self.probRare / self.rare
+
+        if self.ultrarare == 0:
+            singleProbUltraRare = 0
+        else:
+            singleProbUltraRare = self.probUltraRare / self.ultrarare
+
+        for i in range(len(self.rarity)):
+            if self.rarity[i] == "normal":
+                self.rarity[i] = singleProbNormal
+            elif self.rarity[i] == "rare":
+                self.rarity[i] = singleProbRare
+            else:
+                self.rarity[i] = singleProbUltraRare
         
+        # normalize array in this way sum is 1
+        self.rarity = self.rarity / np.sum(self.rarity)
+
 
     def show(self):
 

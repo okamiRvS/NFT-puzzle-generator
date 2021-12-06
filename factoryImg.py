@@ -15,12 +15,14 @@ import numpy as np
 
 class factoryImg():
 
-    def __init__(self, currentDir, layersName, itMustExists, width, height) -> None:
+    def __init__(self, currentDir, layersData, width, height, numberImgs) -> None:
 
         layers = []
 
         root = "layers"
         
+        layersName = list(layersData)
+
         for idx, dir in enumerate(layersName):
             pathDir = os.path.join(root, dir)
             print(pathDir)
@@ -30,15 +32,47 @@ class factoryImg():
             files = os.listdir(pathDir)
 
             for file in files:
-
                 pathImg = os.path.join(pathDir, file)
 
-                layers[-1].addName(file)
+                layers[-1].addNameAndRarity(file)
                 layers[-1].addImg(pathImg)
             
-            if not itMustExists[idx]:
-                layers[-1].addName("noObj")
+            # if it must not exist then add blanck layer
+            if not layersData[dir][0]:
+                layers[-1].addNameAndRarity("noObj")
                 layers[-1].addBlanckImg(width, height)
+
+            # this means that it is a complex layer with a foreground
+            if len(layersData[dir]) > 1:
+                # set the current layer ad complex layer
+                layers[-1].isComplexLayer = True
+
+                # ...so compute image index of the foreground folder
+                index = layersName.index(layersData[dir][1][1])+1
+                layers[-1].index = index
+
+                # create foreground layer and add imgs
+                nameLayer = layersData[dir][1][0]
+                pathDirForeground = os.path.join(root, nameLayer)
+                foregroundLayer = ly.layer(pathDirForeground)
+
+                files = os.listdir(pathDirForeground)
+
+                # add imgs into the foregroundLayer
+                for file in files:
+                    pathImg = os.path.join(pathDirForeground, file)
+
+                    foregroundLayer.addNameAndRarity(file)
+                    foregroundLayer.addImg(pathImg)
+
+                # if it must not exist then add blanck layer
+                if not layersData[dir][0]:
+                    foregroundLayer.addNameAndRarity("noObj")
+                    foregroundLayer.addBlanckImg(width, height)
+
+                layers[-1].foreground = foregroundLayer
+
+            layers[-1].computeWeight()
 
         self.layersName = layersName
 
@@ -58,6 +92,8 @@ class factoryImg():
 
         self.height = height
 
+        self.rarityImg = np.zeros(numberImgs, dtype=np.float32)
+
 
     def showAllImgs(self):
                 
@@ -74,6 +110,15 @@ class factoryImg():
                 return False
         
         return True
+
+
+    def memorizeRarityImg(self, dna):
+
+        sumV = 0
+        for i, val in enumerate(dna):
+            sumV += self.layers[i].rarity[val]
+
+        self.rarityImg[self.currentImg] = sumV
 
 
     def generateRandomImg(self):
@@ -96,10 +141,25 @@ class factoryImg():
                 if len(layer.img)-1 == 0:
                     num = 0
                 else:
-                    num = random.randint(0, len(layer.img)-1)
+                    # https://stackoverflow.com/questions/3679694/a-weighted-version-of-random-choice
+                    # count normal and rare in a single layer, I know that I want to assign 0.1 weight for
+                    # rare and 0.9 for the normal. So, for example 2 rare and 10 normal, so 0.1/2=0.05 for
+                    # each rarity and 0.9/10=0.09 for each normal obj.
+                    # if we want rarity each 500imgs then 1/500=0.002 prob assigned to all rare objs of a single layer
+                    #num = random.randint(0, len(layer.img)-1)
+
+                    num = random.choices(
+                        population=np.arange( len(layer.img) ),
+                        weights=layer.rarity,
+                        k = 1    
+                    )
+
+                if type(num) != int:
+                    num = num[0] # extract result
 
                 # save data for the json            
                 dna[i] = num
+
                 attributes.append({
                     "trait_type": layer.path,
                     "value": layer.name[num]
@@ -118,6 +178,14 @@ class factoryImg():
                 elements = []
                 attributes = []
 
+            # manage elements list, not dna because it doesn't change anything there
+            for i, layer in enumerate(self.layers):
+                if layer.isComplexLayer:
+                    valChoosen = dna[i]
+                    elements.insert(layer.index, layer.foreground.img[valChoosen])
+
+        self.memorizeRarityImg(dna)
+
         img = self.createImg(elements)
 
         data = self.fJson.buildJson(dna, attributes, self.currentImg)
@@ -127,6 +195,7 @@ class factoryImg():
 
 
     def createImg(self, elements):
+
         # create the image
         background = elements[-1]
         for element in elements[::-1][1::]:
@@ -190,3 +259,20 @@ class factoryImg():
                 cv2.imwrite(imgPuzPath, imPuz)
     
         self.fJson.createMetaDataJson(self.imgFolder)
+
+        # report best n values
+        self.bestRarityResult()
+
+    
+    def bestRarityResult(self):
+
+        argSortValues = np.argsort( self.rarityImg)
+        sortValues = np.sort(self.rarityImg)
+
+        printNBestValues = 100
+
+        print("\nN best imgs:")
+        print(argSortValues[:printNBestValues])
+
+        print("\nN best values:")
+        print(sortValues[:printNBestValues])
