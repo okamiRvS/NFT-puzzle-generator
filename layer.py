@@ -18,9 +18,9 @@ class layer():
         self.rare = 0
         self.ultrarare = 0
 
-        self.probNormal = 0.6
-        self.probRare = 0.3
-        self.probUltraRare = 0.1
+        self.probNormal = 0.7
+        self.probRare = 0.25
+        self.probUltraRare = 0.05
 
         self.isComplexLayer = False
         self.index = -1

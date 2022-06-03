@@ -10,19 +10,18 @@ def main():
     # order is important
     layersData = {
         # "nameLayer": [itMustExists?, [LayerForeground, AfterLayer] 
-        "special": [False, ["special-foreground", "wings"]],
         "baby": [False],
         "claws": [True],
-        "eyes": [True],
-        "upface": [False],
-        "ears": [False],
         "mouth": [True],
+        "special": [False, ["special-foreground", "wings"]],
+        "eyes": [True],
+        "ears": [False],
         "hair": [True],
         "bracelets": [False],
         "collars": [False],
         "tails": [False],
-        "skin": [False],
         "tattoo": [False],
+        "skin": [False],
         "face": [True],
         "body": [True],
         "wings": [True],
@@ -32,7 +31,7 @@ def main():
 
     width = 798
     height = 860
-    numberImgs = 300
+    numberImgs = 5000
 
     buildImg = fImg.factoryImg(".\layers", layersData, width, height, numberImgs)
     #buildImg.showAllImgs()
